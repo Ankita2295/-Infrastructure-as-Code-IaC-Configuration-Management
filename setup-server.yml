@@ -1,0 +1,50 @@
+---
+- name: Configure Ubuntu Web Server
+  hosts: webservers
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - git
+          - python3
+        state: present
+
+    - name: Start and enable Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Create web directory
+      ansible.builtin.file:
+        path: /var/www/myapp
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+
+    - name: Create test web page
+      ansible.builtin.copy:
+        content: |
+          <html>
+            <head>
+              <title>Ansible Deployment</title>
+            </head>
+            <body>
+              <h1>Hello from Ansible!</h1>
+              <p>Server configured successfully.</p>
+            </body>
+          </html>
+        dest: /var/www/myapp/index.html
+        owner: www-data
+        group: www-data
+        mode: "0644"
