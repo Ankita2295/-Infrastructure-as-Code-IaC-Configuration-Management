@@ -1,0 +1,147 @@
+Infrastructure as Code, Terraform & Ansible
+1. Infrastructure as Code (IaC)
+Infrastructure as Code (IaC) is the practice of creating and managing infrastructure using configuration files instead of manually configuring servers and cloud resources.
+Benefits
+•	Automation and consistency
+•	Faster infrastructure deployment, Version control and collaboration
+•	Repeatable environments, Reduced manual errors
+Ex: Instead of manually creating an AWS EC2 instance, define it in Terraform code and run terraform apply.
+________________________________________
+2. Terraform
+Terraform is an open-source Infrastructure as Code tool developed by HashiCorp.
+It can provision and manage resources on:
+•	AWS, Azure, Google Cloud
+•	Kubernetes
+•	Basic Terraform workflow
+Write Configuration
+       ↓
+terraform init
+       ↓
+terraform plan
+       ↓
+terraform apply
+       ↓
+Infrastructure Created
+Ex:
+resource "aws_instance" "web" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+}
+________________________________________
+3. Terraform State
+Terraform uses a state file to keep track of infrastructure it manages.
+The default state file is:
+terraform.tfstate
+Terraform compares the desired configuration with the current state to determine what needs to be created, changed, or destroyed.
+Important
+•	Do not manually edit the state file.
+•	State may contain sensitive information.
+•	For teams, use a remote backend such as AWS S3 with appropriate locking/versioning.
+________________________________________
+4. Variables & Outputs
+Variables
+Variables allow you to make Terraform configurations reusable and avoid hard-coding values.
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
+}
+Use it with: instance_type = var.instance_type
+O/p -
+Outputs display useful information after Terraform creates resources.
+output "instance_id" {
+  value = aws_instance.web.id
+}
+View outputs using:
+terraform output
+________________________________________
+5. Terraform Modules
+A module is a reusable collection of Terraform configuration files.
+Modules help organize large infrastructure projects and avoid repeating code.
+Example:
+terraform-project/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+└── modules/
+    └── ec2/
+        ├── main.tf
+        ├── variables.tf
+        └── outputs.tf
+Benefits
+•	Reusability, Better organization
+•	Easier maintenance, Standardized infrastructure
+________________________________________
+6. Ansible
+Ansible is an automation and configuration-management tool.
+It is commonly used to:
+•	Install software
+•	Create users
+•	Configure servers
+•	Start/stop services
+•	Deploy applications
+Ansible uses YAML files called playbooks.
+Ex:
+- name: Install Nginx
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+________________________________________
+7. Ansible Inventory
+An inventory defines the servers that Ansible manages.
+Ex - inventory.ini:
+[webservers]
+web1 ansible_host=192.168.1.10
+web2 ansible_host=192.168.1.11
+
+[webservers:vars]
+ansible_user=ubuntu
+Test connectivity:
+ansible webservers -i inventory.ini -m ping
+________________________________________
+8. Ansible Playbooks
+A playbook is a YAML file containing instructions for configuring or deploying systems.
+Example:
+---
+- name: Configure Web Server
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+    - name: Start Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+Run it with:
+ansible-playbook -i inventory.ini playbook.yml
+________________________________________
+Simple Example
+Terraform:
+Create AWS VPC, subnet, security group, Ec2
+Ansible:
+Connect to EC2
+     ↓
+Install Nginx
+     ↓
+Create User
+     ↓
+Configure Application
+     ↓
+Start Service
+________________________________________
+simple workflow: Terraform → Infrastructure → Ansible → Server Configuration → Application
+Terraform -> Create AWS Infrastructure -> Provision EC2 Server-> Ansible Connects via SSH-> Configure Server -> Install & Configure Application -> Application Running
+
+
+
+
